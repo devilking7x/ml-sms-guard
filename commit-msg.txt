@@ -1,0 +1,8 @@
+SMS Guard: Naive Bayes scam-SMS detector for ML Empowerment Build Challenge 4.0
+
+Real client-side ML: multinomial Naive Bayes (Laplace smoothing) trained
+in the browser on 120 hand-labeled messages (60 scam, 60 ham), with
+word-level explanations and a live held-out evaluation (83.3%, 20/24).
+Plain HTML/CSS/JS, no build step. 9 Node tests + Playwright smoke test pass.
+
+Signed-off-by: Mohd Raja <devilhac143@gmail.com>

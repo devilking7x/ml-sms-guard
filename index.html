@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SMS Guard — Real Naive Bayes Scam-Message Detector</title>
+<meta name="description" content="A small, honest machine-learning app: a Naive Bayes classifier trained on 120 hand-labeled messages that flags likely scam/spam SMS and explains its decision word by word.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <h1>🛡️ SMS Guard</h1>
+  <p class="tagline">A real Naive Bayes classifier that spots scam &amp; spam messages — and shows its work.</p>
+  <p class="sub">Built for the ML Empowerment Build Challenge 4.0 · Solo project by Mohd Raja · Runs 100% in your browser — no server, no data leaves your device.</p>
+</header>
+
+<main>
+  <section class="card" aria-label="Classifier">
+    <h2>Try it</h2>
+    <p>Paste any SMS-style message below. The model was trained on 120 hand-labeled messages and will tell you whether it looks like a <strong>scam/spam</strong> message or a <strong>normal (ham)</strong> one — with a confidence score and the words that mattered most.</p>
+    <label for="msg">Message to check</label>
+    <textarea id="msg" rows="4" placeholder="e.g. Congratulations! You have won a free iPhone. Click here to claim your prize now"></textarea>
+    <div class="row">
+      <button id="checkBtn" type="button">Check message</button>
+      <button id="clearBtn" type="button" class="secondary">Clear</button>
+    </div>
+    <div class="examples">
+      <span>Try an example:</span>
+      <button type="button" class="chip" data-example="scam">🚨 Obvious scam</button>
+      <button type="button" class="chip" data-example="scam2">⚠️ KYC scam</button>
+      <button type="button" class="chip" data-example="ham">✅ Normal message</button>
+      <button type="button" class="chip" data-example="ham2">✅ Delivery update</button>
+    </div>
+    <div id="result" class="result" hidden></div>
+  </section>
+
+  <section class="card" aria-label="How it works">
+    <h2>How the model works</h2>
+    <ol>
+      <li><strong>Training data:</strong> 120 short messages, hand-labeled by the author — 60 scam/spam, 60 legitimate. No copied dataset, no real people's messages.</li>
+      <li><strong>Algorithm:</strong> Multinomial Naive Bayes with Laplace smoothing (α = 1). It learns P(word | scam) and P(word | ham) from the training messages.</li>
+      <li><strong>Prediction:</strong> For a new message it adds up log-probabilities per word and converts the scores with a softmax into an honest probability — the confidence you see is that probability, not a made-up percentage.</li>
+      <li><strong>Explanation:</strong> Every word's contribution (log P(word|scam) − log P(word|ham)) is shown, so you can see exactly which words pushed the decision.</li>
+    </ol>
+    <div id="modelStats" class="stats"></div>
+  </section>
+
+  <section class="card" aria-label="Honest limits">
+    <h2>Honest limits — read this</h2>
+    <ul>
+      <li><strong>Small dataset:</strong> 120 messages is tiny. The model knows the patterns in these messages, not every scam in the world. A new scam wording it has never seen can slip through.</li>
+      <li><strong>Not a security product:</strong> This is a learning demo. Never rely on it alone to judge a real message — if a message asks for money, OTPs, passwords or bank details, treat it as suspicious regardless of what any app says.</li>
+      <li><strong>English only, SMS-style text:</strong> It was trained on short English messages. Long emails, other languages and heavily misspelled text will score poorly.</li>
+      <li><strong>Confidence is a model probability</strong>, not a guarantee. A 90% score means "the model is 90% sure given its training", not "this is 90% a scam".</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-label="About">
+    <h2>About</h2>
+    <p>Scam SMS messages are a real social problem in India — fake KYC, parcel, lottery and loan messages trick people into sharing OTPs and bank details every day. SMS Guard is a beginner-friendly, transparent demonstration that a small, understandable ML model can learn to recognise those patterns — and that understanding <em>why</em> it flags something matters as much as the flag itself.</p>
+    <p>Source code and tests: <a href="https://github.com/devilking7x/ml-sms-guard">github.com/devilking7x/ml-sms-guard</a></p>
+  </section>
+</main>
+
+<footer>
+  <p>SMS Guard · ML Empowerment Build Challenge 4.0 · Built with plain HTML, CSS and JavaScript — no frameworks, no tracking, no server.</p>
+</footer>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  'use strict';
+  var model = SmsGuard.buildModel();
+  var evalResult = SmsGuard.evaluate();
+
+  var stats = document.getElementById('modelStats');
+  var counts = { scam: 0, ham: 0 };
+  SmsGuard.DATASET.forEach(function (ex) { counts[ex.label] += 1; });
+  stats.innerHTML =
+    '<p><strong>Dataset:</strong> ' + SmsGuard.DATASET.length + ' messages (' + counts.scam + ' scam, ' + counts.ham + ' ham) · ' +
+    '<strong>Vocabulary:</strong> ' + model.vocabSize() + ' unique words</p>' +
+    '<p><strong>Held-out test (20% of data the model never trained on):</strong> ' +
+    evalResult.correct + '/' + evalResult.testSize + ' correct = <strong>' +
+    (evalResult.accuracy * 100).toFixed(1) + '% accuracy</strong> · ' +
+    'scam caught ' + evalResult.confusion.scamAsScam + '/' + (evalResult.confusion.scamAsScam + evalResult.confusion.scamAsHam) +
+    ', ham kept ' + evalResult.confusion.hamAsHam + '/' + (evalResult.confusion.hamAsHam + evalResult.confusion.hamAsScam) + '</p>' +
+    '<p class="small">Evaluation is deterministic (every 5th message held out) and recomputed live in your browser — open DevTools and run <code>SmsGuard.evaluate()</code> to verify.</p>';
+
+  var EXAMPLES = {
+    scam: 'Congratulations! You have won a free iPhone. Click here to claim your prize now',
+    scam2: 'Urgent: your KYC is pending. Update now or your account will be closed today',
+    ham: 'Hi, are we still meeting for lunch tomorrow at 1 pm near the college',
+    ham2: 'Your parcel will arrive today between 2 pm and 5 pm'
+  };
+
+  var msgEl = document.getElementById('msg');
+  var resultEl = document.getElementById('result');
+
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function check() {
+    var text = msgEl.value;
+    var pred = model.predict(text);
+    if (pred.reason === 'empty') {
+      resultEl.hidden = false;
+      resultEl.className = 'result neutral';
+      resultEl.innerHTML = '<h3>Nothing to check</h3><p>Type or paste a message first.</p>';
+      return;
+    }
+    var isScam = pred.label === 'scam';
+    var pct = (pred.confidence * 100).toFixed(1);
+    var verdict = isScam ? '⚠️ Looks like SCAM / SPAM' : '✅ Looks like a NORMAL message';
+    var advice = isScam
+      ? 'Do not click links, share OTPs, or send money based on this message. Verify through the official app or helpline.'
+      : 'No scam pattern detected by this small model — but stay alert: this is a learning demo, not a guarantee.';
+    var wordsHtml = pred.contributions.map(function (c) {
+      var dir = c.towardsScam > 0 ? 'scam-word' : 'ham-word';
+      var sign = c.towardsScam > 0 ? '+' : '';
+      return '<span class="word ' + dir + '">' + esc(c.word) + ' <small>' + sign + c.towardsScam.toFixed(2) + '</small></span>';
+    }).join(' ');
+    resultEl.hidden = false;
+    resultEl.className = 'result ' + (isScam ? 'scam' : 'ham');
+    resultEl.innerHTML =
+      '<h3>' + verdict + '</h3>' +
+      '<p>Model confidence: <strong>' + pct + '%</strong> (' + pred.label + ')</p>' +
+      '<div class="bar"><div class="fill ' + (isScam ? 'fill-scam' : 'fill-ham') + '" style="width:' + pct + '%"></div></div>' +
+      '<p>' + advice + '</p>' +
+      '<h4>Words that mattered most</h4>' +
+      '<p class="words">' + wordsHtml + '</p>' +
+      '<p class="small">Red words push toward scam, green toward normal. Score = log P(word|scam) − log P(word|ham). Words the model never saw in training contribute nothing.</p>';
+  }
+
+  document.getElementById('checkBtn').addEventListener('click', check);
+  document.getElementById('clearBtn').addEventListener('click', function () {
+    msgEl.value = '';
+    resultEl.hidden = true;
+    msgEl.focus();
+  });
+  document.querySelectorAll('.chip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      msgEl.value = EXAMPLES[btn.getAttribute('data-example')];
+      check();
+    });
+  });
+})();
+</script>
+</body>
+</html>

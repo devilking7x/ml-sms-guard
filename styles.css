@@ -1,0 +1,65 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  line-height: 1.6;
+}
+header { text-align: center; padding: 2.5rem 1rem 1rem; }
+header h1 { margin: 0; font-size: 2.4rem; }
+.tagline { font-size: 1.15rem; color: #fbbf24; margin: 0.4rem 0; }
+.sub { color: #94a3b8; max-width: 640px; margin: 0 auto; font-size: 0.95rem; }
+main { max-width: 760px; margin: 0 auto; padding: 1rem; }
+.card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 1.4rem;
+  margin-bottom: 1.2rem;
+}
+.card h2 { margin-top: 0; color: #fbbf24; }
+label { display: block; font-weight: 600; margin-bottom: 0.4rem; }
+textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 1rem;
+  resize: vertical;
+}
+.row { display: flex; gap: 0.6rem; margin-top: 0.8rem; }
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: #f59e0b;
+  color: #111827;
+}
+button:hover { background: #fbbf24; }
+button.secondary { background: #334155; color: #e2e8f0; }
+.examples { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.chip { background: #334155; color: #e2e8f0; padding: 0.45rem 0.8rem; font-size: 0.9rem; }
+.result { margin-top: 1.2rem; padding: 1rem; border-radius: 10px; border: 1px solid #475569; }
+.result.scam { background: #450a0a; border-color: #ef4444; }
+.result.ham { background: #052e16; border-color: #22c55e; }
+.result.neutral { background: #1e293b; }
+.result h3 { margin-top: 0; }
+.bar { height: 12px; background: #0f172a; border-radius: 6px; overflow: hidden; margin: 0.5rem 0; }
+.fill { height: 100%; }
+.fill-scam { background: #ef4444; }
+.fill-ham { background: #22c55e; }
+.words { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.word { padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.9rem; background: #0f172a; }
+.word small { opacity: 0.75; }
+.scam-word { border: 1px solid #ef4444; color: #fca5a5; }
+.ham-word { border: 1px solid #22c55e; color: #86efac; }
+.stats { background: #0f172a; border-radius: 8px; padding: 0.8rem 1rem; margin-top: 1rem; }
+.small { font-size: 0.85rem; color: #94a3b8; }
+a { color: #fbbf24; }
+footer { text-align: center; color: #64748b; padding: 1rem; font-size: 0.9rem; }
